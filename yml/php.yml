@@ -1,0 +1,16 @@
+---
+- name: Install php
+  hosts: webserver
+  become: True
+  tasks:
+    - name: Install php
+      apt:
+        name: php
+    - name: Install libapache2-mod-php
+      apt:
+        name: libapache2-mod-php
+    - name: Install php-mysql
+      apt:
+        name: php-mysql
+    - name: Restart Apache server
+      command: systemctl restart apache2.service

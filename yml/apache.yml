@@ -1,0 +1,44 @@
+---
+- name: Install apache2
+   hosts: webserver
+  become: True
+  tasks:
+    - name: Install update
+      ansible.builtin.apt:
+        update_cache: yes
+    - name: Install apache2
+      apt:
+        name: apache2
+  
+
+- name: Clone a Git repository
+  hosts: webserver
+  become: True
+  tasks:
+    - name: Clone git repository
+      ansible.builtin.git:
+        repo: "https://github.com/siamon123/warehouse-inventory-system.git"
+        dest: "/var/www/warehouse-inventory-system/"
+        force: yes
+  
+
+- name: Update Apache configuration
+  hosts: webserver
+  become: True
+  tasks:
+    - name: Copying Apache config
+      copy:
+        src: /etc/apache2/sites-available/000-default.conf
+        dest: /etc/apache2/sites-available/myconf.conf
+    - name: Change DocumentRoot in Apache config
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/sites-available/myconf.conf
+        regexp: '^\s*DocumentRoot\s+'
+        line: 'DocumentRoot /var/www/warehouse-inventory-system/'
+        backrefs: yes
+    - name: Disable site using a2dissite
+      command: a2dissite 000-default.conf
+    - name: Enable site using a2ensite
+      command: a2ensite myconf.conf
+    - name: Reload Apache server
+      command: service apache2 reload
