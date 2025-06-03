@@ -1,0 +1,6 @@
+services:
+  apache:
+    build: .
+    container_name: apache-container
+    ports:
+      - "8080:80"

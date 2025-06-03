@@ -1,0 +1,5 @@
+[webserver]
+192.168.0.104 ansible_user=ubuntu22server ansible_become_password=123456
+
+[dbserver]
+192.168.0.105 ansible_user=ubuntu22server ansible_become_password=123456

@@ -1,0 +1,85 @@
+---
+- name: Install Docker
+  hosts:
+    - webserver
+    - dbserver
+  become: yes
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker CE
+      apt:
+        name:
+          - docker-ce
+        state: present
+
+
+- name: Setup mysql
+  hosts: dbserver
+  become: True
+  tasks:
+    - name: Create directory
+      file:
+        path: "/opt/mysql-container"
+        state: directory
+        mode: '0755'
+
+    - name: Copy files MySQL-container
+      copy:
+        src: ./mysql/
+        dest: "/opt/mysql-container/"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Run MySQL container
+      shell: docker compose up -d
+      args:
+        chdir: "/opt/mysql-container"
+
+
+- name: Setup apache
+  hosts: webserver
+  become: True
+  tasks:
+    - name: Create directory
+      file:
+        path: "/opt/web-container"
+        state: directory
+        mode: '0755'
+
+    - name: Copy files Web-container
+      copy:
+        src: ./web/
+        dest: "/opt/web-container/"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Run Apache+PHP container
+      shell: docker compose up -d
+      args:
+        chdir: "/opt/web-container"
